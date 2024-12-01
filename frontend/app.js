@@ -33,44 +33,231 @@ document.addEventListener('DOMContentLoaded', () => {
     return await response.json();
   }
 
-  async function viewCustomers() {
-    const customers = await fetchCustomers();
-    app.innerHTML = `
-      <div class="flex justify-between justify-center my-8">
-        <h1 class="text-2xl font-bold mb-4 z-20 text-left ml-24">CUSTOMER'S RECORD</h1>
-        <button class="mt-4 bg-gray-500 text-white px-4 py-2 rounded z-20 flex items-center" onclick="homepage()">Back to Homepage</button>
-      </div>
-      <div class="relative shadow-md sm:rounded-lg z-20 ml-24 mb-10">
-        <table class="w-full text-sm text-left rtl:text-right text-gray-500 dark:text-gray-400">
-          <thead class="text-sm text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
-            <tr>
-              <th scope="col" class="px-6 py-3">NAME</th>
-              <th scope="col" class="px-6 py-3">EMAIL</th>
-              <th scope="col" class="px-6 py-3">CURRENT BALANCE</th>
-              <th scope="col" class="px-6 py-3">ACTIONS</th>
-            </tr>
-          </thead>
-          <tbody>
-            ${customers
-              .map(
-                (customer) => `
-              <tr class="bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600">
-                <td class="px-6 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white">${customer.name}</td>
-                <td class="px-6 py-3">${customer.email}</td>
-                <td class="px-6 py-3">$${customer.balance}</td>
-                <td class="px-6 py-3">
-                  <button type="button" class="px-3 py-2 text-sm font-medium text-white bg-blue-500 rounded hover:bg-blue-600 focus:ring-4 focus:outline-none focus:ring-blue-100 inline-block" onclick="viewCustomer('${customer._id}')">View</button>
-                </td>
-              </tr>
-            `
-              )
-              .join('')}
-          </tbody>
-        </table>
-      </div>
-
+  async function createCustomer() {
+  app.innerHTML = `
+    <div class="container mx-auto mt-10 max-w-md">
+      <h1 class="text-2xl font-bold mb-6">Create New Customer</h1>
+      <form id="createCustomerForm" class="bg-white shadow-md rounded px-8 pt-6 pb-8 mb-4">
+        <div class="mb-4">
+          <label class="block text-gray-700 text-sm font-bold mb-2" for="name">
+            Name
+          </label>
+          <input class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" id="name" name="name" type="text" required>
+        </div>
+        <div class="mb-4">
+          <label class="block text-gray-700 text-sm font-bold mb-2" for="email">
+            Email
+          </label>
+          <input class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" id="email" name="email" type="email" required>
+        </div>
+        <div class="mb-4">
+          <label class="block text-gray-700 text-sm font-bold mb-2" for="balance">
+            Initial Balance
+          </label>
+          <input class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" id="balance" name="balance" type="number" min="0" step="0.01">
+        </div>
+        <div class="flex items-center justify-between">
+          <button class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline" type="submit">
+            Create Customer
+          </button>
+          <button type="button" class="bg-gray-500 text-white px-4 py-2 rounded" onclick="viewCustomers()">
+            Cancel
+          </button>
+        </div>
+      </form>
+    </div>
   `;
+
+  document.getElementById('createCustomerForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const formData = new FormData(e.target);
+    const data = {
+      name: formData.get('name'),
+      email: formData.get('email'),
+      balance: parseFloat(formData.get('balance') || 0)
+    };
+
+    try {
+      const response = await fetch('http://localhost:3000/api/customers', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data)
+      });
+
+      const result = await response.json();
+
+      if (response.ok) {
+        alert('Customer created successfully!');
+        viewCustomers();
+      } else {
+        alert(`Error: ${result.message}`);
+      }
+    } catch (error) {
+      console.error('Error:', error);
+      alert('An error occurred while creating the customer');
+    }
+  });
+}
+
+async function editCustomer(customerId) {
+  try {
+    // Fetch the specific customer details
+    const response = await fetch(`http://localhost:3000/api/customers/${customerId}`);
+    const customer = await response.json();
+
+    app.innerHTML = `
+      <div class="container mx-auto mt-10 max-w-md">
+        <h1 class="text-2xl font-bold mb-6">Edit Customer</h1>
+        <form id="editCustomerForm" class="bg-white shadow-md rounded px-8 pt-6 pb-8 mb-4">
+          <input type="hidden" id="customerId" name="customerId" value="${customer._id}">
+          <div class="mb-4">
+            <label class="block text-gray-700 text-sm font-bold mb-2" for="name">
+              Name
+            </label>
+            <input class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" 
+              id="name" 
+              name="name" 
+              type="text" 
+              value="${customer.name}" 
+              required
+            >
+          </div>
+          <div class="mb-4">
+            <label class="block text-gray-700 text-sm font-bold mb-2" for="email">
+              Email
+            </label>
+            <input class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" 
+              id="email" 
+              name="email" 
+              type="email" 
+              value="${customer.email}" 
+              required
+            >
+          </div>
+          <div class="mb-4">
+            <label class="block text-gray-700 text-sm font-bold mb-2" for="balance">
+              Current Balance
+            </label>
+            <input class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" 
+              id="balance" 
+              name="balance" 
+              type="number" 
+              value="${customer.balance}" 
+              min="0" 
+              step="0.01"
+            >
+          </div>
+          <div class="flex items-center justify-between">
+            <button class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline" type="submit">
+              Update Customer
+            </button>
+            <button type="button" class="bg-gray-500 text-white px-4 py-2 rounded" onclick="viewCustomers()">
+              Cancel
+            </button>
+          </div>
+        </form>
+      </div>
+    `;
+
+    document.getElementById('editCustomerForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const formData = new FormData(e.target);
+      const data = {
+        name: formData.get('name'),
+        email: formData.get('email'),
+        balance: parseFloat(formData.get('balance'))
+      };
+
+      try {
+        const response = await fetch(`http://localhost:3000/api/customers/${customerId}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(data)
+        });
+
+        const result = await response.json();
+
+        if (response.ok) {
+          alert('Customer updated successfully!');
+          viewCustomers();
+        } else {
+          alert(`Error: ${result.message}`);
+        }
+      } catch (error) {
+        console.error('Error:', error);
+        alert('An error occurred while updating the customer');
+      }
+    });
+  } catch (error) {
+    console.error('Error fetching customer details:', error);
+    alert('Failed to load customer details');
   }
+}
+
+async function deleteCustomer(customerId) {
+  if (confirm('Are you sure you want to delete this customer? This action cannot be undone.')) {
+    try {
+      const response = await fetch(`http://localhost:3000/api/customers/${customerId}`, {
+        method: 'DELETE'
+      });
+
+      const result = await response.json();
+
+      if (response.ok) {
+        alert('Customer deleted successfully!');
+        viewCustomers();
+      } else {
+        alert(`Error: ${result.message}`);
+      }
+    } catch (error) {
+      console.error('Error:', error);
+      alert('An error occurred while deleting the customer');
+    }
+  }
+}
+
+async function viewCustomers() {
+  const customers = await fetchCustomers();
+  app.innerHTML = `
+    <div class="flex justify-between justify-center my-8">
+      <h1 class="text-2xl font-bold mb-4 text-left ml-24">CUSTOMER'S RECORD</h1>
+      <div class="space-x-4">
+        <button class="mt-4 bg-green-500 text-white px-4 py-2 rounded" onclick="createCustomer()">Add New Customer</button>
+        <button class="mt-4 bg-gray-500 text-white px-4 py-2 rounded" onclick="homepage()">Back to Homepage</button>
+      </div>
+    </div>
+    <div class="relative shadow-md sm:rounded-lg z-20 ml-24 mb-10">
+      <table class="w-full text-sm text-left rtl:text-right text-gray-500 dark:text-gray-400">
+        <thead class="text-sm text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
+          <tr>
+            <th scope="col" class="px-6 py-3">NAME</th>
+            <th scope="col" class="px-6 py-3">EMAIL</th>
+            <th scope="col" class="px-6 py-3">CURRENT BALANCE</th>
+            <th scope="col" class="px-6 py-3">ACTIONS</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${customers
+            .map(
+              (customer) => `
+            <tr class="bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600">
+              <td class="px-6 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white">${customer.name}</td>
+              <td class="px-6 py-3">${customer.email}</td>
+              <td class="px-6 py-3">$${customer.balance}</td>
+              <td class="px-6 py-3 space-x-2">
+                <button type="button" class="px-3 py-2 text-sm font-medium text-white bg-blue-500 rounded hover:bg-blue-600 focus:ring-4 focus:outline-none focus:ring-blue-100 inline-block" onclick="viewCustomer('${customer._id}')">View</button>
+                <button type="button" class="px-3 py-2 text-sm font-medium text-white bg-yellow-500 rounded hover:bg-yellow-600 focus:ring-4 focus:outline-none focus:ring-yellow-100 inline-block" onclick="editCustomer('${customer._id}')">Edit</button>
+                <button type="button" class="px-3 py-2 text-sm font-medium text-white bg-red-500 rounded hover:bg-red-600 focus:ring-4 focus:outline-none focus:ring-red-100 inline-block" onclick="deleteCustomer('${customer._id}')">Delete</button>
+              </td>
+            </tr>
+          `
+            )
+            .join('')}
+        </tbody>
+      </table>
+    </div>
+  `;
+}
 
   async function viewCustomer(id) {
     const response = await fetch(`http://localhost:3000/api/customers/${id}`);
@@ -291,4 +478,8 @@ document.addEventListener('DOMContentLoaded', () => {
   window.viewCustomers = viewCustomers;
   window.homepage = homepage;
   window.populateEmail = populateEmail;
+  // Add these to the window global scope
+  window.createCustomer = createCustomer;
+  window.deleteCustomer = deleteCustomer;
+  window.editCustomer = editCustomer;
 });
