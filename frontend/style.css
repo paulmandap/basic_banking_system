@@ -1,0 +1,19 @@
+.gradient-background {
+  background-image: radial-gradient(
+      50% 110% at 50% 50%,
+      hsla(0, 0%, 100%, 0) 0,
+      #ccecff 100%
+  );
+}
+
+/* Additional global styles can be added here */
+body {
+  font-family: 'Arial', sans-serif;
+}
+
+/* Responsive table styles */
+@media (max-width: 640px) {
+  .responsive-table {
+      overflow-x: auto;
+  }
+}
