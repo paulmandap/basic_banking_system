@@ -10,10 +10,13 @@
   "author": "Harmeet Singh",
   "license": "ISC",
   "dependencies": {
+    "bcryptjs": "^2.4.3",
     "body-parser": "^1.20.2",
     "cors": "^2.8.5",
     "express": "^4.19.2",
+    "jsonwebtoken": "^9.0.2",
     "mongoose": "^8.3.5",
-    "open": "^10.1.0"
+    "open": "^10.1.0",
+    "qrcode": "^1.5.4"
   }
 }

@@ -1,27 +1,215 @@
 document.addEventListener('DOMContentLoaded', () => {
   const app = document.getElementById('app');
 
-  function homepage() {
-      app.innerHTML = `
-          <section class="h-screen w-screen flex flex-col items-center justify-center relative z-10">
-              <div class="absolute top-0 z-[-2] h-screen w-screen rotate-180 transform bg-white gradient-background"></div>
-              <h1 class="mb-4 text-3xl font-bold tracking-tight leading-none text-gray-900 md:text-5xl lg:text-6xl dark:text-white relative z-20">
-                  Welcome to the Basic Banking App
-              </h1>
-              <p class="mb-8 text-lg font-normal text-gray-500 lg:text-xl sm:px-16 lg:px-48 dark:text-gray-200 relative z-20">
-                  Manage your customers and transactions effortlessly.
-              </p>
-              <div class="space-x-4 relative z-20">
-                  <button class="bg-blue-500 text-white px-6 py-3 rounded hover:bg-blue-600" onclick="viewCustomers()">
-                      View All Customers
-                  </button>
-                  <button class="bg-green-500 text-white px-6 py-3 rounded hover:bg-green-600" onclick="viewTransfers()">
-                      View All Transfers
-                  </button>
-              </div>
-          </section>
-      `;
+  function loginPage() {
+    app.innerHTML = `
+      <div class="h-screen flex items-center justify-center bg-gray-100">
+        <div class="bg-white p-8 rounded-lg shadow-md w-96">
+          <h2 class="text-2xl font-bold mb-6 text-center">Login</h2>
+          <form id="loginForm">
+            <div class="mb-4">
+              <label class="block text-gray-700 text-sm font-bold mb-2" for="username">
+                Username
+              </label>
+              <input 
+                class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700" 
+                id="username" 
+                type="text" 
+                required
+              >
+            </div>
+            <div class="mb-6">
+              <label class="block text-gray-700 text-sm font-bold mb-2" for="password">
+                Password
+              </label>
+              <input 
+                class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700" 
+                id="password" 
+                type="password" 
+                required
+              >
+            </div>
+            <div class="flex items-center justify-between">
+              <button 
+                class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded" 
+                type="submit"
+              >
+                Sign In
+              </button>
+              <button 
+                type="button" 
+                class="text-blue-500 hover:text-blue-700"
+                onclick="registerPage()"
+              >
+                Register
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    `;
+
+    document.getElementById('loginForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const username = document.getElementById('username').value;
+      const password = document.getElementById('password').value;
+
+      try {
+        const response = await fetch('http://localhost:3000/api/auth/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ username, password })
+        });
+
+        const data = await response.json();
+
+        if (response.ok) {
+          // Store token and username in localStorage
+          localStorage.setItem('token', data.token);
+          localStorage.setItem('username', data.username);
+          
+          // Redirect to homepage
+          homepage();
+        } else {
+          alert(data.message);
+        }
+      } catch (error) {
+        console.error('Login error:', error);
+        alert('An error occurred during login');
+      }
+    });
   }
+
+  function registerPage() {
+    app.innerHTML = `
+      <div class="h-screen flex items-center justify-center bg-gray-100">
+        <div class="bg-white p-8 rounded-lg shadow-md w-96">
+          <h2 class="text-2xl font-bold mb-6 text-center">Register</h2>
+          <form id="registerForm">
+            <div class="mb-4">
+              <label class="block text-gray-700 text-sm font-bold mb-2" for="username">
+                Username
+              </label>
+              <input 
+                class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700" 
+                id="username" 
+                type="text" 
+                required
+              >
+            </div>
+            <div class="mb-4">
+              <label class="block text-gray-700 text-sm font-bold mb-2" for="email">
+                Email
+              </label>
+              <input 
+                class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700" 
+                id="email" 
+                type="email" 
+                required
+              >
+            </div>
+            <div class="mb-6">
+              <label class="block text-gray-700 text-sm font-bold mb-2" for="password">
+                Password
+              </label>
+              <input 
+                class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700" 
+                id="password" 
+                type="password" 
+                required
+              >
+            </div>
+            <div class="flex items-center justify-between">
+              <button 
+                class="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded" 
+                type="submit"
+              >
+                Register
+              </button>
+              <button 
+                type="button" 
+                class="text-blue-500 hover:text-blue-700"
+                onclick="loginPage()"
+              >
+                Back to Login
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    `;
+
+    document.getElementById('registerForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const username = document.getElementById('username').value;
+      const email = document.getElementById('email').value;
+      const password = document.getElementById('password').value;
+
+      try {
+        const response = await fetch('http://localhost:3000/api/auth/register', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ username, email, password })
+        });
+
+        const data = await response.json();
+
+        if (response.ok) {
+          alert('Registration successful! Please log in.');
+          loginPage();
+        } else {
+          alert(data.message);
+        }
+      } catch (error) {
+        console.error('Registration error:', error);
+        alert('An error occurred during registration');
+      }
+    });
+  }
+
+  // Logout function
+  function logout() {
+    localStorage.removeItem('token');
+    localStorage.removeItem('username');
+    loginPage();
+  }
+
+  // Initial load
+  const token = localStorage.getItem('token');
+  token ? homepage() : loginPage();
+
+  // Modify homepage to check authentication
+  function homepage() {
+    const token = localStorage.getItem('token');
+    if (!token) {
+      loginPage();
+      return;
+    }
+    app.innerHTML = `
+    <section class="h-screen w-screen flex flex-col items-center justify-center relative z-10">
+      <div class="absolute top-0 z-[-2] h-screen w-screen rotate-180 transform bg-white gradient-background"></div>
+      <h1 class="mb-4 text-3xl font-bold tracking-tight leading-none text-gray-900 md:text-5xl lg:text-6xl dark:text-white relative z-20">
+        Welcome to the Basic Banking App
+      </h1>
+      <p class="mb-8 text-lg font-normal text-gray-500 lg:text-xl sm:px-16 lg:px-48 dark:text-gray-200 relative z-20">
+        Manage your customers and transactions effortlessly.
+      </p>
+      <div class="space-x-4 relative z-20">
+        <button class="bg-blue-500 text-white px-6 py-3 rounded hover:bg-blue-600" onclick="viewCustomers()">
+          View All Customers
+        </button>
+        <button class="bg-green-500 text-white px-6 py-3 rounded hover:bg-green-600" onclick="viewTransfers()">
+          View All Transfers
+        </button>
+        <button class="bg-red-500 text-white px-6 py-3 rounded hover:bg-red-600" onclick="logout()">
+          Logout
+        </button>
+      </div>
+    </section>
+  `;
+}
+
+  
 
   async function fetchCustomers() {
     const response = await fetch('http://localhost:3000/api/customers');
@@ -482,4 +670,8 @@ async function viewCustomers() {
   window.createCustomer = createCustomer;
   window.deleteCustomer = deleteCustomer;
   window.editCustomer = editCustomer;
+  window.loginPage = loginPage;
+  window.registerPage = registerPage;
+  window.homepage = homepage;
+  window.logout = logout;
 });

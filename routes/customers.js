@@ -6,7 +6,7 @@ const Customer = require('../models/customer');
 router.post('/', async (req, res) => {
   try {
     const { name, email, balance } = req.body;
-    
+
     // Check if customer with the same email already exists
     const existingCustomer = await Customer.findOne({ email });
     if (existingCustomer) {
@@ -58,7 +58,7 @@ router.get('/:id', async (req, res) => {
 router.put('/:id', async (req, res) => {
   try {
     const { name, email, balance } = req.body;
-    
+
     // Check if customer exists
     const customer = await Customer.findById(req.params.id);
     if (!customer) {
@@ -111,7 +111,7 @@ router.delete('/:id', async (req, res) => {
 
     // Delete the customer
     const deletedCustomer = await Customer.findByIdAndDelete(req.params.id);
-    
+
     if (!deletedCustomer) {
       return res.status(404).json({ message: 'Customer not found' });
     }

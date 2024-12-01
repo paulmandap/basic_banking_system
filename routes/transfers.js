@@ -6,6 +6,18 @@ const Transfer = require('../models/transfer');
 // Create a transfer
 router.post('/', async (req, res) => {
   const { from, to, amount } = req.body;
+
+  const recentTransfers = await Transfer.find({
+    from,
+    to,
+    amount,
+    date: { $gte: new Date(Date.now() - 30000) } // Check transfers in last 30 seconds
+  });
+
+  if (recentTransfers.length > 0) {
+    return res.status(400).json({ message: 'Duplicate transfer detected' });
+  }
+  
   const fromCustomer = await Customer.findById(from);
   const toCustomer = await Customer.findById(to);
 
